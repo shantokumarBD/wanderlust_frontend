@@ -20,14 +20,14 @@ import {
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "Destinations", href: "/destinations" },
-  { label: "My Bookings", href: "#bookings" },
+  { label: "My Bookings", href: "/bookings" },
   { label: "Add Destination", href: "/add-destination" },
 ]
 
 const authLinks = [
-  { label: "Profile", href: "#profile", icon: true },
-  { label: "Login", href: "#login", icon: false },
-  { label: "Sign Up", href: "#signup", icon: false },
+  { label: "Profile", href: "/profile", icon: true },
+  { label: "Login", href: "/login", icon: false },
+  { label: "Sign Up", href: "/signup", icon: false },
 ]
 
 export function Navbar() {
