@@ -214,7 +214,7 @@ export function FeaturedDestinations() {
 
                     <div className="mt-auto pt-3">
                       <Link
-                        href="#book"
+                        href={`/destinations/${destination.id}`}
                         className="inline-flex w-fit items-center gap-1 text-[11px] font-semibold tracking-[0.12em] text-brand uppercase transition-colors hover:text-brand/80"
                       >
                         Book Now

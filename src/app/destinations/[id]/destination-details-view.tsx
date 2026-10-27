@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
+import * as React from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -11,10 +11,11 @@ import {
   MapPinIcon,
   StarIcon,
   Trash2Icon,
-} from "lucide-react"
+} from "lucide-react";
 
-import image1 from "@/assets/destinations/image1.png"
-import { EditDestination } from "@/components/edits/EditDestination"
+import image1 from "@/assets/destinations/image1.png";
+import { EditDestination } from "@/components/edits/EditDestination";
+import Booking from "@/components/booking/Booking";
 
 const DEFAULT_HIGHLIGHTS = [
   "Luxury beachfront accommodation",
@@ -22,21 +23,38 @@ const DEFAULT_HIGHLIGHTS = [
   "Traditional Balinese spa treatment",
   "Private beach dinner experience",
   "Sunrise trek to Mount Batur",
-]
+];
 
 const PERKS = [
   "Free cancellation up to 7 days",
   "Travel insurance included",
   "24/7 customer support",
-]
+];
+
+export interface DestinationDetail {
+  _id?: string;
+  id?: string;
+  destinationName?: string;
+  title?: string;
+  country?: string;
+  category?: string;
+  price?: number;
+  duration?: string;
+  departureDate?: string;
+  rating?: number | string;
+  reviewsCount?: number;
+  description?: string;
+  imageUrl?: string;
+  highlights?: string[];
+}
 
 export function DestinationDetailsView({ destination }: { destination: any }) {
-  const router = useRouter()
-  const [item, setItem] = React.useState(destination)
+  const router = useRouter();
+  const [item, setItem] = React.useState(destination);
   const [selectedDate, setSelectedDate] = React.useState(
-    destination?.departureDate || "05/15/2026"
-  )
-  const [booked, setBooked] = React.useState(false)
+    destination?.departureDate || "05/15/2026",
+  );
+  const [booked, setBooked] = React.useState(false);
 
   const {
     _id,
@@ -51,18 +69,27 @@ export function DestinationDetailsView({ destination }: { destination: any }) {
     description = "Discover the magic of Bali with pristine beaches, ancient temples, and vibrant culture. Experience luxury resorts, tropical landscapes, and unforgettable sunsets.",
     imageUrl,
     highlights = DEFAULT_HIGHLIGHTS,
-  } = item || {}
+  } = item || {};
 
   const handleDelete = async () => {
     if (window.confirm(`Delete "${title}"?`)) {
       if (id) {
-        await fetch(`http://localhost:5000/destinations/${id}`, { method: "DELETE" })
+        await fetch(`http://localhost:5000/destinations/${id}`, {
+          method: "DELETE",
+        });
       }
-      router.push("/destinations")
+      router.push("/destinations");
     }
-  }
+  };
 
-  const imageSrc = imageUrl?.trim() ? imageUrl : image1.src
+  const imageSrc = imageUrl?.trim() ? imageUrl : image1.src;
+
+  const handleBooking = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedDate(e.target.value);
+
+    const departureDate = e.target.value;
+    console.log(departureDate);
+  };
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
@@ -80,7 +107,9 @@ export function DestinationDetailsView({ destination }: { destination: any }) {
           <EditDestination
             destinationId={id}
             initialData={item}
-            onUpdated={(updated) => setItem((prev: any) => ({ ...prev, ...updated }))}
+            onUpdated={(updated) =>
+              setItem((prev: any) => ({ ...prev, ...updated }))
+            }
           />
 
           <button
@@ -96,7 +125,11 @@ export function DestinationDetailsView({ destination }: { destination: any }) {
 
       {/* Hero Panoramic Banner */}
       <div className="relative aspect-[16/9] sm:aspect-[2.2/1] lg:aspect-[2.4/1] w-full overflow-hidden rounded-lg bg-muted">
-        <img src={imageSrc} alt={title} className="h-full w-full object-cover" />
+        <img
+          src={imageSrc}
+          alt={title}
+          className="h-full w-full object-cover"
+        />
       </div>
 
       {/* Content Layout */}
@@ -147,7 +180,10 @@ export function DestinationDetailsView({ destination }: { destination: any }) {
 
             <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3.5">
               {highlights.map((highlight: string, index: number) => (
-                <div key={index} className="flex items-center gap-2.5 text-sm text-foreground/90">
+                <div
+                  key={index}
+                  className="flex items-center gap-2.5 text-sm text-foreground/90"
+                >
                   <CheckIcon className="size-4 shrink-0 text-emerald-500" />
                   <span>{highlight}</span>
                 </div>
@@ -159,7 +195,9 @@ export function DestinationDetailsView({ destination }: { destination: any }) {
         {/* Right Column: Sticky Booking Card */}
         <div className="lg:col-span-1">
           <div className="sticky top-24 rounded-lg border border-border/80 bg-card p-6 sm:p-7 shadow-xs">
-            <p className="text-xs text-muted-foreground font-normal">Starting from</p>
+            <p className="text-xs text-muted-foreground font-normal">
+              Starting from
+            </p>
             <div className="mt-1 flex items-baseline">
               <span className="text-4xl font-bold tracking-tight text-brand">
                 ${price}
@@ -168,34 +206,17 @@ export function DestinationDetailsView({ destination }: { destination: any }) {
             <p className="text-xs text-muted-foreground mt-0.5">per person</p>
 
             <div className="mt-6">
-              <div className="flex items-center rounded-xs border border-border/80 bg-neutral-50 dark:bg-neutral-900/40 px-3.5 py-3 text-sm text-foreground">
+              <form className="flex items-center rounded-xs border border-border/80 bg-neutral-50 dark:bg-neutral-900/40 px-3.5 py-3 text-sm text-foreground">
                 <input
                   type="text"
+                  name="departureDate"
                   value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  placeholder="MM/DD/YYYY"
+                  onChange={handleBooking}
                   className="w-full bg-transparent text-sm text-foreground outline-none"
                 />
-              </div>
+              </form>
+              <Booking destination={item} selectedDate={selectedDate} />
             </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                setBooked(true)
-                setTimeout(() => setBooked(false), 3000)
-              }}
-              className="mt-4 flex w-full items-center justify-center gap-2 rounded-xs bg-brand py-3 text-sm font-semibold text-white transition-all hover:bg-brand/90 active:scale-[0.99]"
-            >
-              <span>Book Now</span>
-              <ArrowRightIcon className="size-4" />
-            </button>
-
-            {booked && (
-              <p className="mt-3 text-center text-xs text-emerald-600 dark:text-emerald-400">
-                Booking request submitted for {selectedDate}!
-              </p>
-            )}
 
             <div className="mt-6 space-y-2.5 text-xs text-muted-foreground">
               {PERKS.map((perk) => (
@@ -209,5 +230,5 @@ export function DestinationDetailsView({ destination }: { destination: any }) {
         </div>
       </div>
     </div>
-  )
+  );
 }
