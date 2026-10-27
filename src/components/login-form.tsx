@@ -20,30 +20,53 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { signUp } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSignUP = async (e: React.SubmitEvent<HTMLFormElement>) => {
+  const handleSignUP = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setErrorMessage(null);
+    setLoading(true);
 
-    const formData = new FormData(e.target);
+    try {
+      const formData = new FormData(e.currentTarget);
 
-    const user = Object.fromEntries(formData.entries()) as {name:string, email:string, password:string, image:string};
+      const name = formData.get("name") as string;
+      const email = formData.get("email") as string;
+      const password = formData.get("password") as string;
+      const image = (formData.get("image") as string) || undefined;
 
-    const { data, error } = await signUp.email({
-        ...user,
-        // callbackURL: "/signin",
-    });
+      const { data, error } = await signUp.email({
+        name,
+        email,
+        password,
+        image,
+        callbackURL: "/signin",
+      });
 
-    if(data) {
+      if (error) {
+        setErrorMessage(error.message || "Failed to sign up. Please try again.");
+        return;
+      }
+
+      if (data) {
         router.push("/signin");
-    }
-    if(error) {
-        console.log(error);
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setErrorMessage(err.message);
+      } else {
+        setErrorMessage("An unexpected error occurred.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -51,14 +74,19 @@ export function LoginForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Welcome back</CardTitle>
+          <CardTitle className="text-xl">Create an account</CardTitle>
           <CardDescription>
-            Login with your Apple or Google account
+            Enter your details below to create your Wanderlust account
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSignUP}>
             <FieldGroup>
+              {errorMessage && (
+                <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive">
+                  {errorMessage}
+                </div>
+              )}
               <Field>
                 <Button variant="outline" type="button">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -83,7 +111,7 @@ export function LoginForm({
                 Or continue with
               </FieldSeparator>
               <Field>
-                <FieldLabel htmlFor="name">Username</FieldLabel>
+                <FieldLabel htmlFor="name">Username / Name</FieldLabel>
                 <Input
                   name="name"
                   id="name"
@@ -93,13 +121,12 @@ export function LoginForm({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="image">Image</FieldLabel>
+                <FieldLabel htmlFor="image">Profile Image URL (Optional)</FieldLabel>
                 <Input
                   name="image"
                   id="image"
                   type="url"
-                  placeholder="https://example.com"
-                  required
+                  placeholder="https://example.com/avatar.jpg"
                 />
               </Field>
               <Field>
@@ -115,17 +142,20 @@ export function LoginForm({
               <Field>
                 <div className="flex items-center">
                   <FieldLabel htmlFor="password">Password</FieldLabel>
-                  <a
-                    href="#"
-                    className="ml-auto text-sm underline-offset-4 hover:underline"
-                  >
-                    Forgot your password?
-                  </a>
                 </div>
-                <Input name="password" id="password" type="password" required />
+                <Input
+                  name="password"
+                  id="password"
+                  type="password"
+                  placeholder="Minimum 8 characters"
+                  minLength={8}
+                  required
+                />
               </Field>
               <Field>
-                <Button type="submit">SignUp</Button>
+                <Button type="submit" disabled={loading}>
+                  {loading ? "Signing up..." : "Sign Up"}
+                </Button>
                 <FieldDescription className="text-center">
                   Already have an account? <Link href="/signin">SignIn</Link>
                 </FieldDescription>
